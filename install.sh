@@ -28,7 +28,7 @@ docker compose up -d --build
 
 echo ">>> Get parameters for client..."
 sleep 3
-docker logs docker-for-xray-reality | tail -n 20
+docker logs xray-reality | tail -n 20
 
 echo ">>> Done! If you just added yourself to the docker group,"
 echo ">>> log out and log back in to make the docker command work without sudo."
