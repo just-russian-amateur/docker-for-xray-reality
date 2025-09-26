@@ -72,3 +72,9 @@ curl -fsSL https://raw.githubusercontent.com/Alexxxander-Laptev/docker-for-xray-
 - Store keys and UUID securely.
 - Regularly update dependencies and monitor Docker image updates.
 - When using a public server, restrict SSH access and close unnecessary ports.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
