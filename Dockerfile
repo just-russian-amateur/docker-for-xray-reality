@@ -1,19 +1,17 @@
-FROM ubuntu:22.04
+FROM debian:stable-slim
 
-# Установка зависимостей
-RUN apt-get update && \
-    apt-get install -y curl unzip sudo jq && \
-    rm -rf /var/lib/apt/lists/*
+# Install packages
+RUN apt-get update && apt-get install -y curl unzip jq && rm -rf /var/lib/apt/lists/*
 
-# Создание папки для XRay
-RUN mkdir -p /usr/local/etc/xray
+# Download latest Xray version from GitHub
+RUN XRAY_VERSION=$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | jq -r .tag_name) \
+    && curl -L -o /tmp/xray.zip https://github.com/XTLS/Xray-core/releases/download/${XRAY_VERSION}/Xray-linux-64.zip \
+    && unzip /tmp/xray.zip -d /usr/local/bin/ \
+    && rm /tmp/xray.zip \
+    && chmod +x /usr/local/bin/xray
 
-# Копируем скрипт entrypoint
+WORKDIR /etc/xray
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Порт, который будет слушать XRay
-EXPOSE 443
-
-# Стартовый скрипт
 ENTRYPOINT ["/entrypoint.sh"]

@@ -1,77 +1,51 @@
 #!/bin/bash
-set -e
+CONFIG="/usr/local/etc/xray/config.json"
 
-CONFIG_PATH="/usr/local/etc/xray/config.json"
-XRAY_BIN="/usr/local/bin/xray"
+if [ ! -f "$CONFIG" ]; then
+    echo ">>> Generation UUID and keys..."
+    UUID=$(xray uuid)
+    /usr/local/bin/xray x25519 > /tmp/xray_keys.txt
+    PRIVATE_KEY=$(awk -F': ' '/PrivateKey/{print $2}' /tmp/xray_keys.txt)
+    PUBLIC_KEY=$(awk -F': ' '/Password/{print $2}' /tmp/xray_keys.txt)
 
-# 1. Скачиваем и устанавливаем XRay, если ещё не установлен
-if [ ! -f "$XRAY_BIN" ]; then
-    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
-fi
-
-# 2. Генерируем приватный ключ и UUID, если конфиг ещё не существует
-if [ ! -f "$CONFIG_PATH" ] || [ ! -s "$CONFIG_PATH" ]; then
-    echo "Генерируем ключи и UUID..."
-    # Извлекаем приватный ключ
-    PRIVATE_KEY=$(echo "$XRAY_KEYS" | awk -F': ' '/Private Key/{print $2}')
-
-    # Извлекаем публичный ключ (Password)
-    PASSWORD=$(echo "$XRAY_KEYS" | awk -F': ' '/Password/{print $2}')
-    UUID=$($XRAY_BIN uuid)
-
-    echo "Ваш публичный ключ: $PUBLIC_KEY"
-    echo "Ваш UUID: $UUID"
-
-    cat > "$CONFIG_PATH" <<EOF
+    cat > "$CONFIG" <<EOF
 {
   "log": { "loglevel": "warning" },
-  "inbounds": [
-    {
-      "listen": "0.0.0.0",
-      "port": 443,
-      "protocol": "vless",
-      "settings": {
-        "clients": [
-          {
-            "id": "$UUID",
-            "flow": "xtls-rprx-vision"
-          }
+  "inbounds": [{
+    "listen": "0.0.0.0",
+    "port": 443,
+    "protocol": "vless",
+    "settings": {
+      "clients": [{ "id": "$UUID", "flow": "xtls-rprx-vision" }],
+      "decryption": "none"
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "security": "reality",
+      "realitySettings": {
+        "dest": "www.vk.com:443",
+        "serverNames": [
+          "www.vk.com",
+          "vk.com",
+          "www.vk.ru",
+          "vk.ru"
         ],
-        "decryption": "none"
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "realitySettings": {
-          "show": false,
-          "dest": "www.vk.com:443",
-          "xver": 0,
-          "serverNames": [
-            "www.vk.com",
-            "vk.com",
-            "www.vk.ru",
-            "vk.ru"
-          ],
-          "privateKey": "$PRIVATE_KEY",
-          "minClientVer": "",
-          "maxClientVer": "",
-          "maxTimeDiff": 0,
-          "shortIds": ["a1b2c3d4"]
-        }
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": ["http","tls"]
+        "privateKey": "$PRIVATE_KEY",
+        "shortIds": ["a1b2c3d4"]
       }
     }
-  ],
+  }],
   "outbounds": [
     { "protocol": "freedom", "tag": "direct" },
     { "protocol": "blackhole", "tag": "block" }
   ]
 }
 EOF
+
+    echo ">>> Generated:"
+    echo "UUID: $UUID"
+    echo "Public Key: $PUBLIC_KEY"
+    echo "Short ID: a1b2c3d4"
 fi
 
-# 3. Запуск XRay
-exec $XRAY_BIN -config "$CONFIG_PATH"
+exec /usr/local/bin/xray run -c "$CONFIG"
