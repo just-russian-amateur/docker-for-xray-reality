@@ -31,7 +31,7 @@ sudo apt install -y curl
 1. Run the following command in the terminal. It will download and execute the installer:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Alexxxander-Laptev/docker-for-xray-reality/refs/heads/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/just-russian-amateur/docker-for-xray-reality/refs/heads/main/install.sh | bash
 ```
 
 2. Depending on your network speed, installation may take from a few minutes up to ~10 minutes. Upon completion, you will see a notification of successful installation, along with:

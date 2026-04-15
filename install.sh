@@ -19,7 +19,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 echo ">>> Cloning the repository with Xray Reality settings..."
 if [ ! -d "xray-docker" ]; then
-  git clone https://github.com/Alexxxander-Laptev/docker-for-xray-reality.git
+  git clone https://github.com/just-russian-amateur/docker-for-xray-reality.git
 fi
 cd docker-for-xray-reality
 
